@@ -1,0 +1,32 @@
+clusters:
+  - name: test_cluster
+    host: localhost
+    port: 27017
+    username: mongolocal
+    password: mongosecret1a
+    authentication_database: admin
+
+    databases:
+      - name: test_db
+        users:
+          - username: db_user
+            password: placeholder
+            roles:
+              - readWrite
+              - dbAdmin
+              - dbOwner
+          - username: service_user
+            password: placeholder
+            roles:
+              - readWrite
+        collections:
+          - name: test_collection
+            indexes:
+              - name: document_id
+                fields:
+                  - id: 1
+                unique: true
+              - name: document_name
+                fields:
+                  - name: 1
+                unique: false
