@@ -1,3 +1,4 @@
+import yaml
 from pymongo import MongoClient
 from pymongo.collection import Collection
 from typing import List, Dict
@@ -5,6 +6,49 @@ from pydantic import BaseModel, SecretStr
 
 from src.mongo_data_model import MongoIndex, MongoCollection, MongoUser, MongoCluster, MongoDatabase
 
+def datamodel_to_config(clusters: List[MongoCluster]):
+    config = {'clusters': []}
+    for cluster in clusters:
+        cluster_config = {
+            'name': cluster.name,
+            'host': cluster.host,
+            'port': cluster.port,
+            'username': cluster.username,
+            'password': cluster.password.get_secret_value(),
+            'authentication_database': cluster.authentication_database,
+            'databases': []
+        }
+        for db in cluster.databases:
+            db_config = {
+                'name': db.name,
+                'users': [],
+                'collections': []
+            }
+            for user in db.users:
+                db_config['users'].append({
+                    'username': user.username,
+                    'password': user.password.get_secret_value(),
+                    'roles': user.roles
+                })
+            for collection in db.collections:
+                collection_config = {
+                    'name': collection.name,
+                    'indexes': [],
+                }
+                for index in collection.indexes:
+                    collection_config['indexes'].append({
+                        'name': index.name,
+                        'fields': [{field: order} for field, order in index.fields.items()],
+                        'unique': index.unique
+                    })
+                db_config['collections'].append(collection_config)
+            cluster_config['databases'].append(db_config)
+        config['clusters'].append(cluster_config)
+    return config
+
+def config_json_to_yml_file(config_json: Dict, file_path: str):
+    with open(file_path, 'w') as file:
+        yaml.dump(config_json, file)
 
 def get_mongo_indexes(collection: Collection) -> List[MongoIndex]:
     indexes = []
@@ -70,3 +114,4 @@ def mongo_to_datamodel(cluster_name, host, port, username, password, auth_db) ->
 
 if __name__ == "__main__":
     cluster = mongo_to_datamodel("MyCluster", "localhost", 27017, "mongolocal", "mongosecret1a", "admin")
+    print(datamodel_to_config([cluster]))

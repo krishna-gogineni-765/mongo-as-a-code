@@ -1,7 +1,7 @@
 import os
 import unittest
 from src.mongo_data_model import MongoCluster, MongoDatabase, MongoUser, MongoCollection, MongoIndex
-from src.utils import parse_config_file
+from src.config_to_mongo import parse_config_file
 
 class TestConfigParsing(unittest.TestCase):
     def tearDown(self):

@@ -1,7 +1,7 @@
 import unittest
 from pymongo import MongoClient
 from src.mongo_data_model import MongoCluster, MongoDatabase, MongoUser, MongoCollection, MongoIndex
-from src.main import main
+from src.config_to_mongo import setup_cluster
 from pydantic import SecretStr
 
 class TestMongoDBSetup(unittest.TestCase):
@@ -29,8 +29,7 @@ class TestMongoDBSetup(unittest.TestCase):
                 )
             ]
         )
-
-        main([cls.cluster])
+        setup_cluster(cls.cluster)
 
         # Create a client for testing
         cls.client = MongoClient("localhost", 27017, username="mongolocal", password="mongosecret1a", authSource="admin")
